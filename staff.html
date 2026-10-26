@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>制作人员详情 - 制作人员库</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #f8f9fa; }
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 0; color: #9ca3af; font-size: 14px; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <a href="index.html" class="text-xl font-bold">制作人员库</a>
+            <nav class="flex gap-6 text-sm text-gray-600">
+                <a href="index.html" class="hover:text-gray-900">首页</a>
+                <a href="anime.html" class="hover:text-gray-900">作品库</a>
+                <a href="#" class="font-bold text-gray-900 border-b-2 border-gray-900 pb-1">人员详情</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div class="mb-4">
+            <a href="index.html" class="text-sm text-blue-500 hover:text-blue-600 flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                返回首页
+            </a>
+        </div>
+
+        <!-- 人员卡片 -->
+        <div id="staffCard" class="bg-white rounded-xl shadow-sm p-8 mb-6 border border-gray-100">
+            <div id="staffLoading" class="text-center text-gray-400 py-4">正在加载人员信息...</div>
+            <div id="staffInfo" class="hidden">
+                <h1 id="staffName" class="text-3xl font-bold mb-4"></h1>
+                <div class="flex gap-6 text-sm text-gray-600">
+                    <p>生日：<span id="staffBirthday" class="font-medium text-gray-800"></span></p>
+                    <p>最后活跃：<span id="staffActiveYear" class="font-medium text-gray-800"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 参与作品列表 -->
+        <h2 class="text-xl font-bold mb-4 text-gray-800">参与作品</h2>
+        <div id="creditsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- 动态注入 -->
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = ''; // 填入你的 URL
+        const SUPABASE_ANON_KEY = ''; // 填入你的 Key
+        let supabase = (SUPABASE_URL && SUPABASE_ANON_KEY) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const staffId = urlParams.get('id');
+
+        async function loadStaffData() {
+            const loadingEl = document.getElementById('staffLoading');
+            const infoEl = document.getElementById('staffInfo');
+            const listContainer = document.getElementById('creditsList');
+
+            if (!supabase) {
+                loadingEl.innerText = "未配置数据库，无法加载。";
+                listContainer.innerHTML = `<div class="empty-state md:col-span-2">等待数据接入</div>`;
+                return;
+            }
+
+            if (!staffId) {
+                loadingEl.innerText = "错误：未指定人员ID。";
+                return;
+            }
+
+            // 1. 获取基本信息
+            const { data: staffData, error } = await supabase.from('staff').select('*').eq('id', staffId).single();
+
+            if (error || !staffData) {
+                loadingEl.innerText = "找不到该制作人员的信息。";
+                listContainer.innerHTML = `<div class="empty-state md:col-span-2">暂无数据</div>`;
+                return;
+            }
+
+            loadingEl.classList.add('hidden');
+            infoEl.classList.remove('hidden');
+            document.getElementById('staffName').innerText = staffData.name;
+            document.getElementById('staffBirthday').innerText = staffData.birthday || '未录入';
+            document.getElementById('staffActiveYear').innerText = staffData.last_active_year ? `${staffData.last_active_year}年` : '未录入';
+
+            // 2. 获取参与作品
+            const { data: creditsData } = await supabase
+                .from('credits')
+                .select(`role, anime:anime_id (id, title, release_year)`)
+                .eq('staff_id', staffId);
+
+            if (!creditsData || creditsData.length === 0) {
+                listContainer.innerHTML = `<div class="empty-state md:col-span-2 border-2 border-dashed border-gray-200 rounded-xl">该人员暂无关联作品记录</div>`;
+            } else {
+                listContainer.innerHTML = creditsData.map(item => `
+                    <div class="bg-white border border-gray-100 rounded-lg p-4 flex justify-between items-center shadow-sm hover:shadow transition">
+                        <div>
+                            <div class="font-bold text-gray-800">${item.anime.title}</div>
+                            <div class="text-xs text-gray-400 mt-1">${item.anime.release_year || '年份未知'}</div>
+                        </div>
+                        <span class="bg-blue-50 text-blue-600 text-xs px-3 py-1.5 rounded-md font-medium">${item.role}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        loadStaffData();
+    </script>
+</body>
+</html>
