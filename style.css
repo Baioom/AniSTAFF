@@ -1,0 +1,200 @@
+:root {
+  --bg: #0f1220;
+  --bg2: #171b2e;
+  --bg3: #1f2540;
+  --panel: #151a2c;
+  --border: #2a3154;
+  --text: #e8ebf7;
+  --text2: #9aa3c7;
+  --accent: #7c9cff;
+  --accent2: #4fd1c5;
+  --tv: #7c9cff;
+  --movie: #f0a35e;
+  --ova: #c58af9;
+  --web: #5bd68d;
+  --radius: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Noto Sans CJK SC", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ---------- topbar ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: linear-gradient(180deg, rgba(23,27,46,.98), rgba(23,27,46,.92));
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.topbar-inner {
+  max-width: 1280px; margin: 0 auto; padding: 10px 18px;
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-logo {
+  width: 42px; height: 42px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 700; color: #0f1220;
+}
+.brand-text h1 { font-size: 19px; line-height: 1.25; }
+.brand-sub { font-size: 12px; color: var(--text2); }
+.tabs { display: flex; gap: 6px; margin-left: auto; }
+.tab {
+  background: transparent; border: 1px solid var(--border); color: var(--text2);
+  padding: 8px 18px; border-radius: 999px; cursor: pointer; font-size: 14px;
+}
+.tab:hover { color: var(--text); border-color: var(--accent); }
+.tab.active { background: var(--accent); border-color: var(--accent); color: #0f1220; font-weight: 600; }
+
+main { max-width: 1280px; margin: 0 auto; padding: 18px; }
+.view { display: none; }
+.view.active { display: block; }
+
+/* ---------- controls ---------- */
+.controls {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.searchbox { position: relative; flex: 0 1 420px; }
+.searchbox.grow { flex: 1 1 380px; }
+.searchbox input {
+  width: 100%; background: var(--bg2); border: 1px solid var(--border);
+  color: var(--text); border-radius: 999px; padding: 9px 38px 9px 16px; font-size: 14px;
+  outline: none;
+}
+.searchbox input:focus { border-color: var(--accent); }
+.clear-btn {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--text2); font-size: 17px;
+  cursor: pointer; display: none;
+}
+.clear-btn.visible { display: block; }
+.sortgroup { display: flex; align-items: center; gap: 6px; }
+.sort-label { font-size: 12px; color: var(--text2); margin-right: 2px; }
+.chip {
+  background: var(--bg2); border: 1px solid var(--border); color: var(--text2);
+  padding: 6px 14px; border-radius: 999px; cursor: pointer; font-size: 13px;
+}
+.chip:hover { color: var(--text); }
+.chip.active { background: var(--bg3); border-color: var(--accent); color: var(--accent); }
+.typegroup { display: flex; gap: 6px; }
+
+/* ---------- az bar ---------- */
+.azbar {
+  display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 14px;
+}
+.azbar button {
+  min-width: 30px; padding: 4px 8px; background: var(--bg2);
+  border: 1px solid var(--border); border-radius: 7px; color: var(--text2);
+  cursor: pointer; font-size: 13px;
+}
+.azbar button:hover { color: var(--text); border-color: var(--accent); }
+
+/* ---------- staff layout ---------- */
+.staff-layout { display: flex; gap: 16px; align-items: flex-start; }
+.staff-list { flex: 1 1 380px; max-width: 480px; }
+.staff-detail { flex: 1 1 600px; position: sticky; top: 88px; }
+
+.letter-group { margin-bottom: 14px; }
+.letter-title {
+  font-size: 15px; font-weight: 700; color: var(--accent);
+  border-bottom: 1px solid var(--border); padding-bottom: 4px; margin-bottom: 6px;
+}
+.staff-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 8px 12px; border-radius: 8px; cursor: pointer;
+  border: 1px solid transparent;
+}
+.staff-item:hover { background: var(--bg2); border-color: var(--border); }
+.staff-item.active { background: var(--bg3); border-color: var(--accent); }
+.staff-name { font-weight: 500; }
+.staff-counts { font-size: 12px; color: var(--text2); white-space: nowrap; }
+.staff-counts b { color: var(--text); font-weight: 600; }
+.noresult { color: var(--text2); padding: 30px 10px; text-align: center; }
+
+/* ---------- detail panel ---------- */
+.detail-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px;
+}
+.detail-empty { color: var(--text2); text-align: center; padding: 60px 20px; border: 1px dashed var(--border); border-radius: var(--radius); }
+.detail-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.detail-head h2 { font-size: 21px; }
+.detail-head .moegirl-link { font-size: 12px; }
+.detail-stats { color: var(--text2); font-size: 13px; margin-bottom: 14px; }
+
+.work-group { margin-bottom: 16px; }
+.work-group-head {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap;
+}
+.work-group-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.work-group-title .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.count-badge {
+  background: var(--bg3); border-radius: 999px; padding: 1px 9px;
+  font-size: 12px; color: var(--text2);
+}
+.mini-sort { display: flex; gap: 4px; margin-left: auto; }
+.mini-sort button {
+  background: none; border: 1px solid var(--border); border-radius: 999px;
+  color: var(--text2); font-size: 12px; padding: 2px 10px; cursor: pointer;
+}
+.mini-sort button.active { color: var(--accent); border-color: var(--accent); }
+.work-item {
+  display: flex; align-items: baseline; gap: 10px; padding: 5px 10px;
+  border-radius: 7px; font-size: 14px;
+}
+.work-item:hover { background: var(--bg2); }
+.work-year {
+  flex: 0 0 52px; color: var(--text2); font-size: 12px;
+  background: var(--bg3); border-radius: 6px; text-align: center; padding: 0 4px;
+}
+.work-title { font-weight: 500; }
+.work-title .ja { color: var(--text2); font-size: 12px; margin-left: 6px; }
+.work-roles { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; max-width: 55%; }
+.role-chip {
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text2);
+  border-radius: 6px; font-size: 11px; padding: 0 6px; white-space: nowrap;
+}
+.group-empty { color: var(--text2); font-size: 13px; padding: 4px 10px; }
+
+/* ---------- works list ---------- */
+.works-meta { color: var(--text2); font-size: 13px; margin-bottom: 10px; }
+.works-item {
+  display: flex; align-items: baseline; gap: 12px; padding: 8px 12px;
+  border-bottom: 1px solid var(--border); border-radius: 6px;
+}
+.works-item:hover { background: var(--bg2); }
+.works-year { flex: 0 0 64px; color: var(--text2); font-size: 13px; }
+.works-title { flex: 1 1 auto; }
+.works-title .z { color: var(--text2); font-size: 12px; margin-left: 8px; }
+.works-extra { flex: 0 0 220px; color: var(--text2); font-size: 12px; text-align: right; }
+.works-year-chip {
+  background: var(--bg3); border-radius: 6px; padding: 1px 8px; font-size: 12px; color: var(--accent2);
+}
+.letter-head {
+  color: var(--accent); font-weight: 700; font-size: 14px;
+  border-bottom: 1px solid var(--border); margin: 16px 0 6px; padding-bottom: 3px;
+}
+
+/* ---------- footer ---------- */
+.footer { border-top: 1px solid var(--border); margin-top: 30px; background: var(--bg2); }
+.footer-inner { max-width: 1280px; margin: 0 auto; padding: 16px 18px; font-size: 12px; color: var(--text2); }
+.footer-inner p { margin-bottom: 4px; }
+
+.loading { color: var(--text2); text-align: center; padding: 40px; }
+
+@media (max-width: 900px) {
+  .staff-layout { flex-direction: column; }
+  .staff-list { max-width: none; width: 100%; }
+  .staff-detail { position: static; width: 100%; }
+  .work-roles { max-width: 100%; justify-content: flex-start; }
+  .works-extra { flex-basis: 120px; }
+}
