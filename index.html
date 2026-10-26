@@ -23,13 +23,9 @@
                 <nav class="hidden md:flex gap-6 text-sm text-gray-600">
                     <a href="index.html" class="font-bold text-gray-900 border-b-2 border-gray-900 pb-1">首页</a>
                     <a href="anime.html" class="hover:text-gray-900 transition">作品库</a>
-                    <a href="#" class="hover:text-gray-900 transition">专题</a>
-                    <a href="#" class="hover:text-gray-900 transition">人员库</a>
-                    <a href="#" class="hover:text-gray-900 transition">统计</a>
+                    <span class="text-gray-300 cursor-not-allowed" title="开发中">专题</span>
+                    <span class="text-gray-300 cursor-not-allowed" title="开发中">统计</span>
                 </nav>
-            </div>
-            <div class="w-64">
-                <input type="text" placeholder="全局搜索..." class="w-full bg-gray-100 rounded-md px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition">
             </div>
         </div>
     </header>
@@ -55,25 +51,20 @@
                 </div>
                 <ul id="resultList" class="space-y-2 text-sm text-gray-600 max-h-60 overflow-y-auto"></ul>
             </div>
-
-            <div class="flex justify-center gap-4 mt-8">
-                <button class="bg-white border border-gray-200 px-4 py-2 rounded-md text-sm text-gray-700 shadow-sm hover:bg-gray-50 transition">+ 新建作品</button>
-                <button class="bg-white border border-gray-200 px-4 py-2 rounded-md text-sm text-gray-700 shadow-sm hover:bg-gray-50 transition">录入人员</button>
-            </div>
         </div>
 
         <!-- 数据统计卡片 -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="card p-6 flex flex-col justify-center">
-                <div class="text-3xl font-bold text-gray-300" id="statAnimeCount">0</div>
+                <div class="text-3xl font-bold text-gray-300" id="statAnimeCount">-</div>
                 <div class="text-sm font-normal text-gray-500 mt-1">部作品</div>
             </div>
             <div class="card p-6 flex flex-col justify-center">
-                <div class="text-3xl font-bold text-gray-300" id="statStaffCount">0</div>
+                <div class="text-3xl font-bold text-gray-300" id="statStaffCount">-</div>
                 <div class="text-sm font-normal text-gray-500 mt-1">位制作人员</div>
             </div>
             <div class="card p-6 flex flex-col justify-center">
-                <div class="text-3xl font-bold text-gray-300" id="statCreditCount">0</div>
+                <div class="text-3xl font-bold text-gray-300" id="statCreditCount">-</div>
                 <div class="text-sm font-normal text-gray-500 mt-1">条参与记录</div>
             </div>
         </div>
@@ -85,13 +76,11 @@
             <div class="md:col-span-4 card p-6">
                 <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
                     <h2 class="text-lg font-bold">制作人员动态</h2>
-                    <a href="#" class="text-sm text-blue-500 hover:text-blue-600">全部 →</a>
                 </div>
                 <div id="newsList" class="space-y-6">
-                    <!-- 空状态 -->
                     <div class="empty-state">
                         <svg class="w-12 h-12 mb-3 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
-                        <span>暂无动态记录</span>
+                        <span>暂无动态记录，等待系统接入</span>
                     </div>
                 </div>
             </div>
@@ -106,7 +95,7 @@
                         <span id="todayDate" class="text-sm text-gray-400"></span>
                     </div>
                     <div id="birthdayList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- 动态注入 -->
+                        <div class="text-sm text-gray-400 p-3">等待数据接入...</div>
                     </div>
                 </div>
 
@@ -114,10 +103,9 @@
                 <div class="card p-6">
                     <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-4">
                         <h2 class="text-lg font-bold">近期活跃</h2>
-                        <span class="text-sm text-gray-400">近三年参与作品数排名</span>
                     </div>
                     <div id="activeList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- 动态注入 -->
+                        <div class="text-sm text-gray-400 p-3">等待数据接入...</div>
                     </div>
                 </div>
 
@@ -125,10 +113,9 @@
                 <div class="card p-6">
                     <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-4">
                         <h2 class="text-lg font-bold">久未露面</h2>
-                        <span class="text-sm text-gray-400">3年以上没有新作品</span>
                     </div>
                     <div id="inactiveList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- 动态注入 -->
+                        <div class="text-sm text-gray-400 p-3">等待数据接入...</div>
                     </div>
                 </div>
 
@@ -137,34 +124,32 @@
 
     </main>
 
-    <!-- 引入 Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // ==========================================
-        // ⚠️ 这里需要替换成你自己的 Supabase 项目信息 (如果没有配置，页面会显示默认状态)
+        // ⚠️ 【重要】在这里填入你的 Supabase 信息
+        // 填入后，页面就会自动拉取数据！
         // ==========================================
-        const SUPABASE_URL = ''; // 例如 'https://xxx.supabase.co'
-        const SUPABASE_ANON_KEY = ''; // 例如 'eyJhbGciOi...'
+        const SUPABASE_URL = ''; 
+        const SUPABASE_ANON_KEY = ''; 
 
         let supabase = null;
         if (SUPABASE_URL && SUPABASE_ANON_KEY) {
             supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
 
-        // 通用空状态HTML
-        const emptyHTML = `<div class="empty-state text-gray-400">暂无数据，请先录入。</div>`;
+        const emptyHTML = `<div class="empty-state text-gray-400">暂无数据</div>`;
 
         document.addEventListener("DOMContentLoaded", () => {
             const today = new Date();
             document.getElementById('todayDate').innerText = `${String(today.getMonth() + 1).padStart(2, '0')}月${String(today.getDate()).padStart(2, '0')}日`;
             
-            // 初始化默认空状态
-            document.getElementById('birthdayList').innerHTML = emptyHTML;
-            document.getElementById('activeList').innerHTML = emptyHTML;
-            document.getElementById('inactiveList').innerHTML = emptyHTML;
-            
+            // 如果没有配置数据库，直接退出，保持占位状态
             if (!supabase) {
-                console.warn("未配置 Supabase 链接，当前为纯静态壳子。");
+                console.warn("未配置 Supabase，当前展示为静态占位。");
+                document.getElementById('statAnimeCount').innerText = "0";
+                document.getElementById('statStaffCount').innerText = "0";
+                document.getElementById('statCreditCount').innerText = "0";
                 return;
             }
 
@@ -174,25 +159,30 @@
             fetchInactiveStaff();
         });
 
-        // 获取统计数据
         async function fetchStats() {
-            const { count: animeCount } = await supabase.from('anime').select('*', { count: 'exact', head: true });
-            const { count: staffCount } = await supabase.from('staff').select('*', { count: 'exact', head: true });
-            const { count: creditCount } = await supabase.from('credits').select('*', { count: 'exact', head: true });
+            try {
+                const { count: animeCount } = await supabase.from('anime').select('*', { count: 'exact', head: true });
+                const { count: staffCount } = await supabase.from('staff').select('*', { count: 'exact', head: true });
+                const { count: creditCount } = await supabase.from('credits').select('*', { count: 'exact', head: true });
 
-            document.getElementById('statAnimeCount').innerText = animeCount || 0;
-            document.getElementById('statStaffCount').innerText = staffCount || 0;
-            document.getElementById('statCreditCount').innerText = creditCount || 0;
+                document.getElementById('statAnimeCount').innerText = animeCount || 0;
+                document.getElementById('statStaffCount').innerText = staffCount || 0;
+                document.getElementById('statCreditCount').innerText = creditCount || 0;
+            } catch (e) {
+                console.error(e);
+            }
         }
 
-        // 获取今日生日
         async function fetchBirthdays(month, day) {
             const mm = String(month).padStart(2, '0');
             const dd = String(day).padStart(2, '0');
             const { data } = await supabase.from('staff').select('name').like('birthday', `%-${mm}-${dd}`);
             
             const container = document.getElementById('birthdayList');
-            if (!data || data.length === 0) return; // 保持空状态
+            if (!data || data.length === 0) {
+                container.innerHTML = emptyHTML;
+                return;
+            }
             
             container.innerHTML = data.map(item => `
                 <div class="bg-gray-50 p-3 rounded-lg flex justify-between items-center text-sm border border-gray-100">
@@ -201,12 +191,14 @@
             `).join('');
         }
 
-        // 获取近期活跃
         async function fetchActiveStaff() {
             const { data } = await supabase.from('staff').select('id, name, last_active_year').order('last_active_year', { ascending: false }).limit(6);
             
             const container = document.getElementById('activeList');
-            if (!data || data.length === 0) return;
+            if (!data || data.length === 0) {
+                container.innerHTML = emptyHTML;
+                return;
+            }
 
             container.innerHTML = data.map(item => `
                 <a href="staff.html?id=${item.id}" class="border border-gray-100 p-3 rounded-lg flex justify-between items-center text-sm hover:bg-gray-50 transition cursor-pointer">
@@ -216,12 +208,14 @@
             `).join('');
         }
 
-        // 获取久未露面
         async function fetchInactiveStaff() {
             const { data } = await supabase.from('staff').select('id, name, last_active_year').lt('last_active_year', 2023).order('last_active_year', { ascending: true }).limit(6);
             
             const container = document.getElementById('inactiveList');
-            if (!data || data.length === 0) return;
+            if (!data || data.length === 0) {
+                container.innerHTML = emptyHTML;
+                return;
+            }
 
             container.innerHTML = data.map(item => `
                 <a href="staff.html?id=${item.id}" class="border border-gray-100 p-3 rounded-lg flex justify-between items-center text-sm hover:bg-gray-50 transition cursor-pointer">
@@ -231,21 +225,25 @@
             `).join('');
         }
 
-        // 搜索功能
         async function handleSearch() {
             const keyword = document.getElementById('searchInput').value.trim();
             const resultContainer = document.getElementById('searchResults');
             const resultList = document.getElementById('resultList');
 
-            if (!keyword) return alert('请输入查询内容');
-            resultContainer.classList.remove('hidden');
-            resultList.innerHTML = '<li class="text-gray-400 text-center py-4">查询中...</li>';
+            if (!keyword) return;
 
-            if (!supabase) return resultList.innerHTML = '<li class="text-red-500 text-center py-4">数据库未配置</li>';
+            resultContainer.classList.remove('hidden');
+            
+            if (!supabase) {
+                resultList.innerHTML = '<li class="text-gray-500 text-center py-4">数据库尚未配置，无法搜索。</li>';
+                return;
+            }
+
+            resultList.innerHTML = '<li class="text-gray-400 text-center py-4">查询中...</li>';
 
             const { data, error } = await supabase.from('staff').select('id, name, last_active_year').ilike('name', `%${keyword}%`).limit(10);
 
-            if (error) return resultList.innerHTML = `<li class="text-red-500 text-center py-4">查询出错：${error.message}</li>`;
+            if (error) return resultList.innerHTML = `<li class="text-red-500 text-center py-4">查询出错</li>`;
             if (data.length === 0) return resultList.innerHTML = '<li class="text-gray-500 text-center py-4">未找到相关制作人员</li>';
 
             resultList.innerHTML = data.map(item => `
