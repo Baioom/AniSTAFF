@@ -18,7 +18,6 @@
             <nav class="flex gap-6 text-sm text-gray-600">
                 <a href="index.html" class="hover:text-gray-900">首页</a>
                 <a href="anime.html" class="hover:text-gray-900">作品库</a>
-                <a href="#" class="font-bold text-gray-900 border-b-2 border-gray-900 pb-1">人员详情</a>
             </nav>
         </div>
     </header>
@@ -31,7 +30,6 @@
             </a>
         </div>
 
-        <!-- 人员卡片 -->
         <div id="staffCard" class="bg-white rounded-xl shadow-sm p-8 mb-6 border border-gray-100">
             <div id="staffLoading" class="text-center text-gray-400 py-4">正在加载人员信息...</div>
             <div id="staffInfo" class="hidden">
@@ -43,7 +41,6 @@
             </div>
         </div>
 
-        <!-- 参与作品列表 -->
         <h2 class="text-xl font-bold mb-4 text-gray-800">参与作品</h2>
         <div id="creditsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- 动态注入 -->
@@ -52,8 +49,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = ''; // 填入你的 URL
-        const SUPABASE_ANON_KEY = ''; // 填入你的 Key
+        // ⚠️ 填入你的 Supabase 信息
+        const SUPABASE_URL = ''; 
+        const SUPABASE_ANON_KEY = ''; 
         let supabase = (SUPABASE_URL && SUPABASE_ANON_KEY) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -65,17 +63,16 @@
             const listContainer = document.getElementById('creditsList');
 
             if (!supabase) {
-                loadingEl.innerText = "未配置数据库，无法加载。";
-                listContainer.innerHTML = `<div class="empty-state md:col-span-2">等待数据接入</div>`;
+                loadingEl.innerText = "数据库未配置，请等待管理员接入。";
+                listContainer.innerHTML = `<div class="empty-state md:col-span-2 border-2 border-dashed border-gray-200 rounded-xl">暂无数据</div>`;
                 return;
             }
 
             if (!staffId) {
-                loadingEl.innerText = "错误：未指定人员ID。";
+                loadingEl.innerText = "错误：未指定人员ID。请从首页点击进入。";
                 return;
             }
 
-            // 1. 获取基本信息
             const { data: staffData, error } = await supabase.from('staff').select('*').eq('id', staffId).single();
 
             if (error || !staffData) {
@@ -90,11 +87,7 @@
             document.getElementById('staffBirthday').innerText = staffData.birthday || '未录入';
             document.getElementById('staffActiveYear').innerText = staffData.last_active_year ? `${staffData.last_active_year}年` : '未录入';
 
-            // 2. 获取参与作品
-            const { data: creditsData } = await supabase
-                .from('credits')
-                .select(`role, anime:anime_id (id, title, release_year)`)
-                .eq('staff_id', staffId);
+            const { data: creditsData } = await supabase.from('credits').select(`role, anime:anime_id (id, title, release_year)`).eq('staff_id', staffId);
 
             if (!creditsData || creditsData.length === 0) {
                 listContainer.innerHTML = `<div class="empty-state md:col-span-2 border-2 border-dashed border-gray-200 rounded-xl">该人员暂无关联作品记录</div>`;
