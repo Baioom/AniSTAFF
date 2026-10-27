@@ -123,12 +123,27 @@
       </div>
     </div>
     <div class="typebar" id="untranslatedTypeTabs"></div>
+    <div class="gh-box" id="ghBox">
+      <div class="gh-row">
+        <span class="gh-label">GitHub 直传</span>
+        <input id="ghOwner" class="gh-input" placeholder="用户名/组织">
+        <span class="gh-sep">/</span>
+        <input id="ghRepo" class="gh-input" placeholder="仓库名">
+        <input id="ghBranch" class="gh-input gh-branch" placeholder="分支" value="main">
+        <input id="ghToken" class="gh-input gh-token" type="password" placeholder="Token（需 repo 写权限）">
+        <input id="ghPath" class="gh-input gh-path" placeholder="路径" value="data/zh-overrides.json">
+        <button class="chip" id="ghSave">保存设置</button>
+        <button class="chip primary" id="ghUpload">↑ 直接上传到 GitHub</button>
+        <span class="gh-status" id="ghStatus"></span>
+      </div>
+      <p class="edit-hint">Token 仅保存在本浏览器；点击上传会把中文名写入仓库 <code>data/zh-overrides.json</code>，EdgeOne 重新部署后全站生效。</p>
+    </div>
     <div class="edit-toolbar">
       <button class="chip" id="exportZhBtn">↓ 导出中文名 JSON</button>
       <button class="chip" id="importZhBtn">↑ 导入 JSON</button>
       <input type="file" id="importZhFile" accept="application/json" style="display:none">
       <button class="chip danger" id="clearZhBtn">清空本地编辑</button>
-      <span class="edit-hint">编辑保存在浏览器本地；导出后把文件放到站点 <code>data/zh-overrides.json</code> 并部署即永久生效。</span>
+      <span class="edit-hint">编辑会先保存在浏览器本地，点「直接上传到 GitHub」即可永久入库。</span>
     </div>
     <div class="edit-list" id="untranslatedList"></div>
   </section>

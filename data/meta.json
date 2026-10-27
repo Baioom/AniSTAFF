@@ -1,6 +1,6 @@
 {
- "generated": "2026-10-27T08:45:25.012Z",
- "staffCount": 6635,
+ "generated": "2026-10-27T09:31:44.955Z",
+ "staffCount": 7121,
  "worksDb": {
   "tv": 6299,
   "movie": 2269,
@@ -8,17 +8,17 @@
   "web": 461
  },
  "zhCoverage": {
-  "tv": 4150,
-  "movie": 1148,
+  "tv": 4074,
+  "movie": 1120,
   "ova": 360
  },
  "authorsCount": 730,
- "companiesCount": 79,
+ "companiesCount": 78,
  "deceasedCount": 33,
- "workCreditsCount": 2105,
+ "workCreditsCount": 2113,
  "untranslated": {
-  "tv": 2149,
-  "movie": 1121,
+  "tv": 2225,
+  "movie": 1149,
   "ova": 664
  },
  "sources": {

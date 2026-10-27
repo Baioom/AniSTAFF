@@ -8,7 +8,7 @@
   const $ = (sel) => document.querySelector(sel);
 
   const TYPE_LABEL = { tv: 'TV动画', movie: '剧场版', ova: 'OVA', web: '网络动画' };
-  const PROF_ORDER = ['监督·演出', '脚本', '作画', '美术·色彩', '摄影·特效', '音响', '制作人', '编集', '企划', '制作', '其他'];
+  const PROF_ORDER = ['监督·演出', '脚本', '作画', '美术·色彩', '摄影·特效', '音响', '音乐', '制作人', '编集', '企划', '动画制作', '制作', '其他'];
 
   const state = {
     meta: null,
@@ -68,6 +68,7 @@
       if (r.ok) state.fileZh = await r.json();
     } catch { }
     loadLocal();
+    applyGhConfigToForm();
     renderFooterMeta();
     renderProfFilter();
     renderStaffList();
@@ -358,6 +359,11 @@
     }
   }
 
+  function seriesSiblings(w) {
+    if (w.g == null || !state.worksDb) return [];
+    return (state.worksDb.tv || []).filter(x => x.g === w.g && !(x.t === w.t && x.y === w.y));
+  }
+
   function renderWorkCard(w) {
     const card = el('div', 'work-card');
     const head = el('div', 'work-card-head');
@@ -376,6 +382,22 @@
     if (w.sc) foot.appendChild(el('span', 'staff-n', `${w.sc} 人参与`));
     foot.appendChild(el('span', 'open-hint', '查看表记 →'));
     card.appendChild(foot);
+    const sibs = seriesSiblings(w);
+    if (sibs.length) {
+      const sib = el('div', 'card-siblings');
+      sib.appendChild(el('span', 'sib-label', '其他期：'));
+      for (const s of sibs.slice(0, 4)) {
+        const b = el('button', 'sib-chip', `${s.y ? s.y + ' ' : ''}${zhOfWork(s) || s.t}`);
+        b.title = s.t;
+        b.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openWorkModal(s);
+        });
+        sib.appendChild(b);
+      }
+      if (sibs.length > 4) sib.appendChild(el('span', 'sib-more', `+${sibs.length - 4}`));
+      card.appendChild(sib);
+    }
     card.addEventListener('click', () => openWorkModal(w));
     return card;
   }
@@ -402,11 +424,28 @@
     const modal = $('#workModal');
     const body = $('#workModalBody');
     $('#workModalTitle').textContent = zhOfWork(w) || w.t;
-    $('#workModalSub').textContent = [w.y ? `${w.y}年` : '年份未定', TYPE_LABEL[w.k] || '', w.c || '', w.dir ? `监督：${w.dir}` : '', w.z && w.z !== (zhOfWork(w)) ? `中文：${zhOfWork(w)}` : ''].filter(Boolean).join(' · ');
+    $('#workModalSub').textContent = [w.y ? `${w.y}年` : '年份未定', TYPE_LABEL[w.k] || '', w.c || '', w.dir ? `监督：${w.dir}` : ''].filter(Boolean).join(' · ');
     body.innerHTML = '<div class="loading">加载表记…</div>';
     modal.hidden = false;
     await ensureCredits();
-    const rec = state.creditMap.get(normKey(zhOfWork(w))) || state.creditMap.get(normKey(w.t)) || state.creditMap.get(normKey(w.z));
+    renderWorkModalBody(w);
+  }
+
+  const KEY_ROLE_ORDER = ['企画', '监督', '系列构成', '角色设计', '美术监督', '色彩设计', '摄影监督', '音乐', '音响监督', '执行制作人', '总制作人', '制作人', '动画制作人', '动画制作'];
+
+  function recFor(w) {
+    if (!state.creditMap) return null;
+    return state.creditMap.get(normKey(zhOfWork(w))) || state.creditMap.get(normKey(w.t)) || state.creditMap.get(normKey(w.z)) || null;
+  }
+  function keyOf(w, rec) {
+    const k = rec && rec.k ? { ...rec.k } : {};
+    if (!k['动画制作'] && w.c) k['动画制作'] = [w.c];
+    return k;
+  }
+
+  function renderWorkModalBody(w) {
+    const body = $('#workModalBody');
+    const rec = recFor(w);
     body.innerHTML = '';
     if (!rec || !rec.c || !rec.c.length) {
       body.appendChild(el('div', 'noresult', '暂无制作人员表记数据'));
@@ -424,11 +463,95 @@
       }
       body.appendChild(ul);
     }
+
+    // 主要制作人员
+    const k = keyOf(w, rec);
+    const kRows = KEY_ROLE_ORDER.filter(r => k[r] && k[r].length);
+    if (kRows.length) {
+      const box = el('div', 'key-staff-box');
+      box.appendChild(el('div', 'key-staff-title', '主要制作人员'));
+      for (const r of kRows) {
+        const row = el('div', 'key-staff-row');
+        row.appendChild(el('span', 'key-role', r));
+        row.appendChild(el('span', 'key-names', k[r].join('、')));
+        box.appendChild(row);
+      }
+      body.appendChild(box);
+    }
+
+    // 其他期 & 对比
+    const sibs = seriesSiblings(w);
+    if (sibs.length) {
+      const wrap = el('div', 'sibling-box');
+      wrap.appendChild(el('div', 'key-staff-title', '同系列其他期'));
+      const line = el('div', 'sibling-line');
+      for (const s of [...sibs].sort((a, b) => (a.y || 0) - (b.y || 0))) {
+        const b = el('button', 'sib-chip', `${s.y ? s.y + ' ' : ''}${zhOfWork(s) || s.t}`);
+        b.addEventListener('click', (e) => { e.stopPropagation(); renderWorkModalBody(s); });
+        line.appendChild(b);
+      }
+      wrap.appendChild(line);
+      const cmpCount = [w, ...sibs].filter(x => recFor(x) && Object.keys(keyOf(x, recFor(x))).length >= 3).length;
+      if (cmpCount >= 2) {
+        const btn = el('button', 'chip primary compare-btn', '⇄ 对比各期主要制作人员');
+        btn.addEventListener('click', () => renderCompare(w));
+        wrap.appendChild(btn);
+      }
+      body.appendChild(wrap);
+    }
+
     const linkLine = el('div', 'modal-links');
     const wl = el('a', '', '在 Weblio 查看 ↗');
     wl.href = weblioUrl(w.t); wl.target = '_blank'; wl.rel = 'noopener';
     linkLine.appendChild(wl);
     body.appendChild(linkLine);
+  }
+
+  function renderCompare(w) {
+    const body = $('#workModalBody');
+    const sibs = seriesSiblings(w);
+    const cols = [...sibs, w].sort((a, b) => (a.y || 0) - (b.y || 0));
+    const data = cols.map(c => ({ w: c, k: keyOf(c, recFor(c)) }));
+    const rows = KEY_ROLE_ORDER.filter(r => data.some(d => d.k[r] && d.k[r].length));
+    body.innerHTML = '';
+    const head = el('div', 'compare-head');
+    head.appendChild(el('h4', '', '主要制作人员对比'));
+    const back = el('button', 'chip', '← 返回作品');
+    back.addEventListener('click', () => renderWorkModalBody(w));
+    head.appendChild(back);
+    body.appendChild(head);
+    if (!rows.length) {
+      body.appendChild(el('div', 'noresult', '这些期数暂无可对比的主要制作人员数据'));
+      return;
+    }
+    const table = document.createElement('table');
+    table.className = 'compare-table';
+    const thead = document.createElement('thead');
+    const hr = document.createElement('tr');
+    hr.appendChild(el('th', '', '职务'));
+    for (const c of cols) {
+      const th = document.createElement('th');
+      th.appendChild(document.createTextNode(`${c.y ? c.y + ' ' : ''}${zhOfWork(c) || c.t}`));
+      hr.appendChild(th);
+    }
+    thead.appendChild(hr);
+    table.appendChild(thead);
+    const tbody = document.createElement('tbody');
+    for (const r of rows) {
+      const tr = document.createElement('tr');
+      tr.appendChild(el('td', 'cmp-role', r));
+      let prev = null;
+      for (const d of data) {
+        const v = (d.k[r] || []).join('、') || '—';
+        const td = el('td', 'cmp-cell' + (prev !== null && prev !== v ? ' changed' : ''), v);
+        tr.appendChild(td);
+        prev = v;
+      }
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    body.appendChild(table);
+    body.appendChild(el('div', 'compare-hint', '高亮单元格表示与上一期主要人员不同。'));
   }
 
   /* ============ authors / companies ============ */
@@ -601,6 +724,93 @@
     reader.readAsText(file);
   }
 
+  /* ---------- GitHub direct upload ---------- */
+  const GH_KEY = 'anistaff:gh';
+  function ghConfig() {
+    try { return JSON.parse(localStorage.getItem(GH_KEY) || '{}'); } catch { return {}; }
+  }
+  function applyGhConfigToForm() {
+    const cfg = ghConfig();
+    if (cfg.owner) $('#ghOwner').value = cfg.owner;
+    if (cfg.repo) $('#ghRepo').value = cfg.repo;
+    if (cfg.branch) $('#ghBranch').value = cfg.branch;
+    if (cfg.path) $('#ghPath').value = cfg.path;
+    if (cfg.token) $('#ghToken').value = cfg.token;
+  }
+  function toB64(str) {
+    const bytes = new TextEncoder().encode(str);
+    let bin = '';
+    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+  function fromB64(b64) {
+    const bin = atob(String(b64 || '').replace(/\s/g, ''));
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  }
+  async function ghUpload() {
+    const status = $('#ghStatus');
+    const cfg = {
+      owner: $('#ghOwner').value.trim(),
+      repo: $('#ghRepo').value.trim(),
+      branch: $('#ghBranch').value.trim() || 'main',
+      token: $('#ghToken').value.trim(),
+      path: $('#ghPath').value.trim() || 'data/zh-overrides.json',
+    };
+    if (!cfg.owner || !cfg.repo || !cfg.token) {
+      status.textContent = '请先填写仓库 owner / repo / Token';
+      status.className = 'gh-status error';
+      return;
+    }
+    localStorage.setItem(GH_KEY, JSON.stringify(cfg));
+    const merged = { ...state.fileZh, ...state.localZh };
+    if (!Object.keys(merged).length) {
+      status.textContent = '没有可上传的内容';
+      status.className = 'gh-status error';
+      return;
+    }
+    status.textContent = '上传中…';
+    status.className = 'gh-status';
+    const api = `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${cfg.path.split('/').map(encodeURIComponent).join('/')}`;
+    const headers = { Authorization: `Bearer ${cfg.token}`, Accept: 'application/vnd.github+json' };
+    try {
+      let sha = null;
+      let existing = {};
+      const g = await fetch(api + '?ref=' + encodeURIComponent(cfg.branch), { headers });
+      if (g.ok) {
+        const j = await g.json();
+        sha = j.sha;
+        if (j.content) {
+          try { existing = JSON.parse(fromB64(j.content)); } catch { existing = {}; }
+        }
+      } else if (g.status !== 404) {
+        const err = await g.json().catch(() => ({}));
+        throw new Error(`读取文件失败（${g.status}）：${err.message || ''}`);
+      }
+      const finalMap = { ...existing, ...merged };
+      const body = {
+        message: `更新作品中文名（${Object.keys(merged).length} 条）`,
+        content: toB64(JSON.stringify(finalMap, null, 1)),
+        branch: cfg.branch,
+      };
+      if (sha) body.sha = sha;
+      const p = await fetch(api, {
+        method: 'PUT',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const pj = await p.json().catch(() => ({}));
+      if (!p.ok) throw new Error(`提交失败（${p.status}）：${pj.message || ''}`);
+      state.fileZh = finalMap;
+      status.textContent = `✓ 已上传 ${Object.keys(merged).length} 条（提交 ${String(pj.commit && pj.commit.sha || '').slice(0, 7)}）`;
+      status.className = 'gh-status ok';
+    } catch (e) {
+      status.textContent = '✗ ' + e.message;
+      status.className = 'gh-status error';
+    }
+  }
+
   /* ============ events ============ */
   function bindEvents() {
     document.querySelectorAll('#mainTabs .tab').forEach(b => {
@@ -688,6 +898,21 @@
 
     $('#workModalClose').addEventListener('click', closeWorkModal);
     $('#workModal').addEventListener('click', (e) => { if (e.target === $('#workModal')) closeWorkModal(); });
+
+    $('#ghSave').addEventListener('click', () => {
+      const cfg = {
+        owner: $('#ghOwner').value.trim(),
+        repo: $('#ghRepo').value.trim(),
+        branch: $('#ghBranch').value.trim() || 'main',
+        token: $('#ghToken').value.trim(),
+        path: $('#ghPath').value.trim() || 'data/zh-overrides.json',
+      };
+      localStorage.setItem(GH_KEY, JSON.stringify(cfg));
+      const st = $('#ghStatus');
+      st.textContent = '设置已保存';
+      st.className = 'gh-status ok';
+    });
+    $('#ghUpload').addEventListener('click', ghUpload);
   }
 
   boot();
