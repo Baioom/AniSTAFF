@@ -1,6 +1,6 @@
 {
- "generated": "2026-10-27T10:57:21.171Z",
- "staffCount": 7121,
+ "generated": "2026-10-27T11:29:24.138Z",
+ "staffCount": 7145,
  "worksDb": {
   "tv": 6299,
   "movie": 2269,
@@ -12,10 +12,10 @@
   "movie": 1090,
   "ova": 341
  },
- "authorsCount": 730,
- "companiesCount": 78,
+ "authorsCount": 744,
+ "companiesCount": 71,
  "deceasedCount": 33,
- "workCreditsCount": 5700,
+ "workCreditsCount": 5713,
  "untranslated": {
   "tv": 2378,
   "movie": 1179,

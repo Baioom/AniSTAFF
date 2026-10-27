@@ -8,7 +8,7 @@
   const $ = (sel) => document.querySelector(sel);
 
   const TYPE_LABEL = { tv: 'TV动画', movie: '剧场版', ova: 'OVA', web: '网络动画' };
-  const PROF_ORDER = ['监督·演出', '脚本', '作画', '美术·色彩', '摄影·特效', '音响', '音乐', '制作人', '编集', '企划', '动画制作', '制作', '其他'];
+  const PROF_ORDER = ['监督', '分镜', '演出', '脚本', '作画', '美术', '色彩', '摄影·特效', '音响', '音乐', '制作人', '编集', '企划', '动画制作', '制作', '其他'];
 
   const state = {
     meta: null,
@@ -72,7 +72,6 @@
       if (r.ok) state.fileZh = await r.json();
     } catch { }
     loadLocal();
-    applyGhConfigToForm();
     renderFooterMeta();
     renderProfFilter();
     renderStaffList();
@@ -718,89 +717,55 @@
     reader.readAsText(file);
   }
 
-  /* ---------- GitHub direct upload ---------- */
-  const GH_KEY = 'anistaff:gh';
-  function ghConfig() {
-    try { return JSON.parse(localStorage.getItem(GH_KEY) || '{}'); } catch { return {}; }
-  }
-  function applyGhConfigToForm() {
-    const cfg = ghConfig();
-    if (cfg.owner) $('#ghOwner').value = cfg.owner;
-    if (cfg.repo) $('#ghRepo').value = cfg.repo;
-    if (cfg.branch) $('#ghBranch').value = cfg.branch;
-    if (cfg.path) $('#ghPath').value = cfg.path;
-    if (cfg.token) $('#ghToken').value = cfg.token;
-  }
-  function toB64(str) {
-    const bytes = new TextEncoder().encode(str);
-    let bin = '';
-    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-    return btoa(bin);
-  }
-  function fromB64(b64) {
-    const bin = atob(String(b64 || '').replace(/\s/g, ''));
-    const bytes = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    return new TextDecoder().decode(bytes);
+  /* ---------- GitHub upload (tokenless, via GitHub web editor) ---------- */
+  const GH_OWNER = 'Baioom';
+  const GH_REPO = 'AniSTAFF';
+  const GH_BRANCH = 'main';
+  const GH_PATH = 'data/zh-overrides.json';
+  function buildOverridesText() {
+    const merged = { ...state.fileZh, ...state.localZh };
+    return Object.keys(merged).length ? JSON.stringify(merged, null, 1) : '';
   }
   async function ghUpload() {
     const status = $('#ghStatus');
-    const cfg = {
-      owner: $('#ghOwner').value.trim(),
-      repo: $('#ghRepo').value.trim(),
-      branch: $('#ghBranch').value.trim() || 'main',
-      token: $('#ghToken').value.trim(),
-      path: $('#ghPath').value.trim() || 'data/zh-overrides.json',
-    };
-    if (!cfg.owner || !cfg.repo || !cfg.token) {
-      status.textContent = '请先填写仓库 owner / repo / Token';
-      status.className = 'gh-status error';
-      return;
-    }
-    localStorage.setItem(GH_KEY, JSON.stringify(cfg));
-    const merged = { ...state.fileZh, ...state.localZh };
-    if (!Object.keys(merged).length) {
+    const content = buildOverridesText();
+    if (!content) {
       status.textContent = '没有可上传的内容';
       status.className = 'gh-status error';
       return;
     }
-    status.textContent = '上传中…';
-    status.className = 'gh-status';
-    const api = `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${cfg.path.split('/').map(encodeURIComponent).join('/')}`;
-    const headers = { Authorization: `Bearer ${cfg.token}`, Accept: 'application/vnd.github+json' };
+    const n = Object.keys({ ...state.fileZh, ...state.localZh }).length;
+    let exists = false;
     try {
-      let sha = null;
-      let existing = {};
-      const g = await fetch(api + '?ref=' + encodeURIComponent(cfg.branch), { headers });
-      if (g.ok) {
-        const j = await g.json();
-        sha = j.sha;
-        if (j.content) {
-          try { existing = JSON.parse(fromB64(j.content)); } catch { existing = {}; }
-        }
-      } else if (g.status !== 404) {
-        const err = await g.json().catch(() => ({}));
-        throw new Error(`读取文件失败（${g.status}）：${err.message || ''}`);
-      }
-      const finalMap = { ...existing, ...merged };
-      const body = {
-        message: `更新作品中文名（${Object.keys(merged).length} 条）`,
-        content: toB64(JSON.stringify(finalMap, null, 1)),
-        branch: cfg.branch,
-      };
-      if (sha) body.sha = sha;
-      const p = await fetch(api, {
-        method: 'PUT',
-        headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      const pj = await p.json().catch(() => ({}));
-      if (!p.ok) throw new Error(`提交失败（${p.status}）：${pj.message || ''}`);
-      state.fileZh = finalMap;
-      status.textContent = `✓ 已上传 ${Object.keys(merged).length} 条（提交 ${String(pj.commit && pj.commit.sha || '').slice(0, 7)}）`;
+      const r = await fetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/${GH_PATH}?t=${Date.now()}`, { cache: 'no-store' });
+      exists = r.ok;
+    } catch { }
+    if (!exists) {
+      const url = `https://github.com/${GH_OWNER}/${GH_REPO}/new/${GH_BRANCH}/${GH_PATH}?filename=${encodeURIComponent(GH_PATH)}&value=${encodeURIComponent(content)}`;
+      window.open(url, '_blank');
+      status.textContent = `已打开 GitHub 新建页（${n} 条），点 Commit changes 即可`;
       status.className = 'gh-status ok';
-    } catch (e) {
-      status.textContent = '✗ ' + e.message;
+    } else {
+      try { await navigator.clipboard.writeText(content); } catch { }
+      window.open(`https://github.com/${GH_OWNER}/${GH_REPO}/edit/${GH_BRANCH}/${GH_PATH}`, '_blank');
+      status.textContent = `内容已复制（${n} 条）；在 GitHub 页面全选粘贴后提交`;
+      status.className = 'gh-status ok';
+    }
+  }
+  async function ghCopy() {
+    const status = $('#ghStatus');
+    const content = buildOverridesText();
+    if (!content) {
+      status.textContent = '没有可复制的内容';
+      status.className = 'gh-status error';
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(content);
+      status.textContent = 'JSON 已复制到剪贴板';
+      status.className = 'gh-status ok';
+    } catch {
+      status.textContent = '复制失败，请使用「导出中文名 JSON」';
       status.className = 'gh-status error';
     }
   }
@@ -893,20 +858,8 @@
     $('#workModalClose').addEventListener('click', closeWorkModal);
     $('#workModal').addEventListener('click', (e) => { if (e.target === $('#workModal')) closeWorkModal(); });
 
-    $('#ghSave').addEventListener('click', () => {
-      const cfg = {
-        owner: $('#ghOwner').value.trim(),
-        repo: $('#ghRepo').value.trim(),
-        branch: $('#ghBranch').value.trim() || 'main',
-        token: $('#ghToken').value.trim(),
-        path: $('#ghPath').value.trim() || 'data/zh-overrides.json',
-      };
-      localStorage.setItem(GH_KEY, JSON.stringify(cfg));
-      const st = $('#ghStatus');
-      st.textContent = '设置已保存';
-      st.className = 'gh-status ok';
-    });
     $('#ghUpload').addEventListener('click', ghUpload);
+    $('#ghCopy').addEventListener('click', ghCopy);
   }
 
   boot();
