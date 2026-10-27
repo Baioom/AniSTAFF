@@ -23,6 +23,7 @@
       <button class="tab" data-view="authors">原作</button>
       <button class="tab" data-view="companies">制作公司</button>
       <button class="tab" data-view="deceased">去世人员</button>
+      <button class="tab" data-view="untranslated">未翻译作品</button>
     </nav>
   </div>
 </header>
@@ -36,12 +37,8 @@
         <input type="search" id="staffSearch" placeholder="搜索制作人员姓名（中文名 / 拼音）" autocomplete="off">
         <button id="staffSearchClear" class="clear-btn" title="清空">×</button>
       </div>
-      <div class="sortgroup">
-        <span class="sort-label">人员排序</span>
-        <button class="chip active" data-staffsort="pinyin">首字母</button>
-        <button class="chip" data-staffsort="count">作品数</button>
-      </div>
     </div>
+    <div class="profbar" id="profFilter"></div>
     <div class="azbar" id="azbar"></div>
     <div class="staff-layout">
       <div class="staff-list" id="staffList"></div>
@@ -102,6 +99,7 @@
       <button class="chip active" data-companysort="count">作品数</button>
       <button class="chip" data-companysort="pinyin">首字母</button>
     </div>
+    <p class="hint-text">仅收录「元请」动画制作公司（动画实际制作方）；企划公司、制作委员会不在此列。</p>
     <div class="table-list" id="companyList"></div>
   </section>
 
@@ -116,7 +114,40 @@
     <div class="news-list" id="deceasedList"></div>
   </section>
 
+  <!-- ============ 未翻译作品 ============ -->
+  <section id="view-untranslated" class="view">
+    <div class="page-head">
+      <h2>未翻译作品 <span class="page-sub" id="untranslatedPageSub"></span></h2>
+      <div class="searchbox works-search">
+        <input type="search" id="untranslatedSearch" placeholder="筛选日文原名..." autocomplete="off">
+      </div>
+    </div>
+    <div class="typebar" id="untranslatedTypeTabs"></div>
+    <div class="edit-toolbar">
+      <button class="chip" id="exportZhBtn">↓ 导出中文名 JSON</button>
+      <button class="chip" id="importZhBtn">↑ 导入 JSON</button>
+      <input type="file" id="importZhFile" accept="application/json" style="display:none">
+      <button class="chip danger" id="clearZhBtn">清空本地编辑</button>
+      <span class="edit-hint">编辑保存在浏览器本地；导出后把文件放到站点 <code>data/zh-overrides.json</code> 并部署即永久生效。</span>
+    </div>
+    <div class="edit-list" id="untranslatedList"></div>
+  </section>
+
 </main>
+
+<!-- 作品详情弹窗 -->
+<div class="modal-mask" id="workModal" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3 id="workModalTitle">作品</h3>
+        <div class="modal-sub" id="workModalSub"></div>
+      </div>
+      <button class="modal-close" id="workModalClose">×</button>
+    </div>
+    <div class="modal-body" id="workModalBody"></div>
+  </div>
+</div>
 
 <footer class="footer">
   <div class="footer-inner">
