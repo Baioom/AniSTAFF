@@ -49,6 +49,10 @@
   function zhOfWork(w) {
     return state.localZh[w.t] || state.fileZh[w.t] || w.z || '';
   }
+  function displayTitle(w) {
+    const base = zhOfWork(w) || w.t;
+    return w.sn ? `${base}（第${w.sn}期）` : base;
+  }
   function loadLocal() {
     try { state.localZh = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch { state.localZh = {}; }
   }
@@ -370,7 +374,7 @@
     const titleWrap = el('div');
     titleWrap.className = 'work-card-title';
     const zh = zhOfWork(w);
-    titleWrap.appendChild(document.createTextNode(zh || w.t));
+    titleWrap.appendChild(document.createTextNode(displayTitle(w)));
     if (zh) titleWrap.appendChild(el('div', 'work-card-ja', w.t));
     head.appendChild(titleWrap);
     const badge = el('span', 'badge ' + w.k, TYPE_LABEL[w.k] || '其他');
@@ -387,7 +391,7 @@
       const sib = el('div', 'card-siblings');
       sib.appendChild(el('span', 'sib-label', '其他期：'));
       for (const s of sibs.slice(0, 4)) {
-        const b = el('button', 'sib-chip', `${s.y ? s.y + ' ' : ''}${zhOfWork(s) || s.t}`);
+        const b = el('button', 'sib-chip', `${s.y ? s.y + ' ' : ''}${displayTitle(s)}`);
         b.title = s.t;
         b.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -404,18 +408,8 @@
 
   /* ---------- work modal ---------- */
   async function ensureCredits() {
-    if (state.creditMap) return;
-    if (!state.credits) {
-      try { state.credits = await (await fetch('data/works-credits.json')).json(); } catch { state.credits = []; }
-    }
-    const map = new Map();
-    for (const c of state.credits) {
-      const k1 = normKey(c.t);
-      const k2 = normKey(c.j);
-      if (k1) map.set(k1, c);
-      if (k2 && !map.has(k2)) map.set(k2, c);
-    }
-    state.creditMap = map;
+    if (state.credits) return;
+    try { state.credits = await (await fetch('data/works-credits.json')).json(); } catch { state.credits = []; }
   }
 
   function closeWorkModal() { $('#workModal').hidden = true; }
@@ -423,7 +417,7 @@
   async function openWorkModal(w) {
     const modal = $('#workModal');
     const body = $('#workModalBody');
-    $('#workModalTitle').textContent = zhOfWork(w) || w.t;
+    $('#workModalTitle').textContent = displayTitle(w);
     $('#workModalSub').textContent = [w.y ? `${w.y}年` : '年份未定', TYPE_LABEL[w.k] || '', w.c || '', w.dir ? `监督：${w.dir}` : ''].filter(Boolean).join(' · ');
     body.innerHTML = '<div class="loading">加载表记…</div>';
     modal.hidden = false;
@@ -434,8 +428,8 @@
   const KEY_ROLE_ORDER = ['企画', '监督', '系列构成', '角色设计', '美术监督', '色彩设计', '摄影监督', '音乐', '音响监督', '执行制作人', '总制作人', '制作人', '动画制作人', '动画制作'];
 
   function recFor(w) {
-    if (!state.creditMap) return null;
-    return state.creditMap.get(normKey(zhOfWork(w))) || state.creditMap.get(normKey(w.t)) || state.creditMap.get(normKey(w.z)) || null;
+    if (!state.credits || w.ci == null) return null;
+    return state.credits[w.ci] || null;
   }
   function keyOf(w, rec) {
     const k = rec && rec.k ? { ...rec.k } : {};
@@ -486,7 +480,7 @@
       wrap.appendChild(el('div', 'key-staff-title', '同系列其他期'));
       const line = el('div', 'sibling-line');
       for (const s of [...sibs].sort((a, b) => (a.y || 0) - (b.y || 0))) {
-        const b = el('button', 'sib-chip', `${s.y ? s.y + ' ' : ''}${zhOfWork(s) || s.t}`);
+        const b = el('button', 'sib-chip', `${s.y ? s.y + ' ' : ''}${displayTitle(s)}`);
         b.addEventListener('click', (e) => { e.stopPropagation(); renderWorkModalBody(s); });
         line.appendChild(b);
       }
@@ -531,7 +525,7 @@
     hr.appendChild(el('th', '', '职务'));
     for (const c of cols) {
       const th = document.createElement('th');
-      th.appendChild(document.createTextNode(`${c.y ? c.y + ' ' : ''}${zhOfWork(c) || c.t}`));
+      th.appendChild(document.createTextNode(`${c.y ? c.y + ' ' : ''}${displayTitle(c)}`));
       hr.appendChild(th);
     }
     thead.appendChild(hr);
