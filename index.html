@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="日本动画制作人员查询表：萌娘百科OP表记数据，作品按TV动画、剧场版、OVA分类，支持按时间与首字母排序。">
+<meta name="description" content="日本动画制作人员查询表：萌娘百科OP表记数据，作品按类型与年份浏览，支持按时间与首字母排序。">
 <title>动画制作人员查询表 - AniStaff</title>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -14,12 +14,15 @@
       <span class="brand-logo">動</span>
       <div class="brand-text">
         <h1>动画制作人员查询表</h1>
-        <p class="brand-sub">日本TV动画OP表记 · 萌娘百科 × Weblio</p>
+        <p class="brand-sub">日本TV动画OP表记 · 萌娘百科</p>
       </div>
     </div>
     <nav class="tabs" id="mainTabs">
       <button class="tab active" data-view="staff">人员查询</button>
       <button class="tab" data-view="works">作品库</button>
+      <button class="tab" data-view="authors">原作</button>
+      <button class="tab" data-view="companies">制作公司</button>
+      <button class="tab" data-view="deceased">去世人员</button>
     </nav>
   </div>
 </header>
@@ -30,7 +33,7 @@
   <section id="view-staff" class="view active">
     <div class="controls">
       <div class="searchbox">
-        <input type="search" id="staffSearch" placeholder="搜索制作人员姓名（中文名 / 日文名 / 拼音）" autocomplete="off">
+        <input type="search" id="staffSearch" placeholder="搜索制作人员姓名（中文名 / 拼音）" autocomplete="off">
         <button id="staffSearchClear" class="clear-btn" title="清空">×</button>
       </div>
       <div class="sortgroup">
@@ -50,25 +53,67 @@
 
   <!-- ============ 作品库 ============ -->
   <section id="view-works" class="view">
-    <div class="controls">
-      <div class="typegroup" id="workTypeTabs">
-        <button class="chip active" data-type="tv">TV动画</button>
-        <button class="chip" data-type="movie">剧场版</button>
-        <button class="chip" data-type="ova">OVA</button>
+    <div class="page-head">
+      <h2>作品库 <span class="page-sub" id="worksPageSub"></span></h2>
+      <div class="searchbox works-search">
+        <input type="search" id="workSearch" placeholder="筛选标题..." autocomplete="off">
       </div>
-      <div class="searchbox grow">
-        <input type="search" id="workSearch" placeholder="搜索作品名称" autocomplete="off">
-        <button id="workSearchClear" class="clear-btn" title="清空">×</button>
-      </div>
+    </div>
+    <div class="typebar" id="workTypeTabs"></div>
+    <div class="yearbar" id="workYearTabs"></div>
+    <div class="works-toolbar">
       <div class="sortgroup">
-        <span class="sort-label">作品排序</span>
-        <button class="chip active" data-worksort="time">时间</button>
+        <span class="sort-label">排序</span>
+        <button class="chip active" data-worksort="time">年份</button>
         <button class="chip" data-worksort="letter">首字母</button>
         <button class="chip" id="workOrderToggle" title="切换升序/降序">↓ 降序</button>
       </div>
+      <div class="works-meta" id="worksMeta"></div>
     </div>
-    <div class="works-meta" id="worksMeta"></div>
-    <div class="works-list" id="worksList"></div>
+    <div class="card-grid" id="worksGrid"></div>
+  </section>
+
+  <!-- ============ 原作 ============ -->
+  <section id="view-authors" class="view">
+    <div class="page-head">
+      <h2>原作 <span class="page-sub" id="authorsPageSub"></span></h2>
+      <div class="searchbox works-search">
+        <input type="search" id="authorSearch" placeholder="筛选原作人员..." autocomplete="off">
+      </div>
+    </div>
+    <div class="sortgroup" style="margin-bottom:12px">
+      <span class="sort-label">排序</span>
+      <button class="chip active" data-authorsort="count">作品数</button>
+      <button class="chip" data-authorsort="pinyin">首字母</button>
+    </div>
+    <div class="table-list" id="authorList"></div>
+  </section>
+
+  <!-- ============ 制作公司 ============ -->
+  <section id="view-companies" class="view">
+    <div class="page-head">
+      <h2>动画制作公司 <span class="page-sub" id="companiesPageSub"></span></h2>
+      <div class="searchbox works-search">
+        <input type="search" id="companySearch" placeholder="筛选公司名称..." autocomplete="off">
+      </div>
+    </div>
+    <div class="sortgroup" style="margin-bottom:12px">
+      <span class="sort-label">排序</span>
+      <button class="chip active" data-companysort="count">作品数</button>
+      <button class="chip" data-companysort="pinyin">首字母</button>
+    </div>
+    <div class="table-list" id="companyList"></div>
+  </section>
+
+  <!-- ============ 去世人员 ============ -->
+  <section id="view-deceased" class="view">
+    <div class="page-head">
+      <h2>去世人员 <span class="page-sub" id="deceasedPageSub"></span></h2>
+      <div class="searchbox works-search">
+        <input type="search" id="deceasedSearch" placeholder="筛选姓名 / 职务..." autocomplete="off">
+      </div>
+    </div>
+    <div class="news-list" id="deceasedList"></div>
   </section>
 
 </main>
@@ -76,11 +121,9 @@
 <footer class="footer">
   <div class="footer-inner">
     <p>数据来源：
-      <a href="https://mzh.moegirl.org.cn/User:%E9%BB%91%E9%BB%91%E7%9A%84%E7%99%BD%E6%8F%8F/%E6%97%A5%E6%9C%ACTV%E5%8A%A8%E7%94%BBOP%E8%A1%A8%E8%AE%B0" target="_blank" rel="noopener">萌娘百科 · 日本TV动画OP表记</a>（制作人员与TV动画作品）·
+      <a href="https://mzh.moegirl.org.cn/User:%E9%BB%91%E9%BB%91%E7%9A%84%E7%99%BD%E6%8F%8F/%E6%97%A5%E6%9C%ACTV%E5%8A%A8%E7%94%BBOP%E8%A1%A8%E8%AE%B0" target="_blank" rel="noopener">萌娘百科 · 日本TV动画OP表记</a> ·
       <a href="https://www.weblio.jp/content/%E6%97%A5%E6%9C%AC%E3%81%AE%E3%83%86%E3%83%AC%E3%83%93%E3%82%A2%E3%83%8B%E3%83%A1%E4%BD%9C%E5%93%81%E4%B8%80%E8%A6%A7" target="_blank" rel="noopener">Weblio 日本のテレビアニメ作品一覧</a> ·
-      <a href="https://www.weblio.jp/content/%E6%97%A5%E6%9C%AC%E3%81%AE%E3%82%A2%E3%83%8B%E3%83%A1%E6%98%A0%E7%94%BB%E4%BD%9C%E5%93%81%E4%B8%80%E8%A6%A7" target="_blank" rel="noopener">日本のアニメ映画作品一覧</a> ·
-      <a href="https://www.weblio.jp/content/%E6%97%A5%E6%9C%AC%E3%81%AEOVA%E4%BD%9C%E5%93%81%E4%B8%80%E8%A6%A7" target="_blank" rel="noopener">日本のOVA作品一覧</a>
-      （Weblio 内容源自维基百科镜像）
+      <a href="https://www.bilibili.com/anime/" target="_blank" rel="noopener">哔哩哔哩番剧</a>（中文标题）
     </p>
     <p id="footerMeta"></p>
   </div>

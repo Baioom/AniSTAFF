@@ -1,16 +1,25 @@
 {
- "generated": "2026-10-26T15:05:53.336Z",
- "staffCount": 9251,
+ "generated": "2026-10-26T15:53:09.616Z",
+ "staffCount": 6862,
  "worksDb": {
   "tv": 5566,
   "movie": 2358,
-  "ova": 1024
+  "ova": 1024,
+  "web": 461
  },
- "staffPagesParsed": 602,
+ "zhCoverage": {
+  "tv": 1371,
+  "movie": 376,
+  "ova": 7
+ },
+ "authorsCount": 735,
+ "companiesCount": 618,
+ "deceasedCount": 33,
  "sources": {
   "op": "https://mzh.moegirl.org.cn/User:黑黑的白描/日本TV动画OP表记",
   "weblioTv": "https://www.weblio.jp/content/日本のテレビアニメ作品一覧",
   "weblioMovie": "https://www.weblio.jp/content/日本のアニメ映画作品一覧",
-  "weblioOva": "https://www.weblio.jp/content/日本のOVA作品一覧"
+  "weblioOva": "https://www.weblio.jp/content/日本のOVA作品一覧",
+  "bili": "https://www.bilibili.com/anime/"
  }
 }
