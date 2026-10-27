@@ -208,7 +208,15 @@
     detail.innerHTML = '';
     const card = el('div', 'detail-card');
     const head = el('div', 'detail-head');
-    head.appendChild(el('h2', '', rec.n));
+    const h2 = el('h2', '');
+    if (rec.u) {
+      const nameLink = el('a', 'staff-title-link', rec.n);
+      nameLink.href = moegirlUrl(rec.u); nameLink.target = '_blank'; nameLink.rel = 'noopener';
+      h2.appendChild(nameLink);
+    } else {
+      h2.textContent = rec.n;
+    }
+    head.appendChild(h2);
     if (rec.u) {
       const a = el('a', 'moegirl-link', '萌娘百科 ↗');
       a.href = moegirlUrl(rec.u); a.target = '_blank'; a.rel = 'noopener';
@@ -272,8 +280,35 @@
     return copy;
   }
 
+  async function openWorkFromStaff(w) {
+    try {
+      await ensureData('worksDb', 'data/works-db.json');
+      const db = state.worksDb;
+      const key = normKey(w.t);
+      const jkey = normKey(w.j);
+      const lists = [db.tv, db.movie, db.ova, db.web];
+      let found = null;
+      for (const list of lists) {
+        found = list.find(x => (!w.y || x.y === w.y) && (normKey(x.t) === jkey || normKey(x.z) === key));
+        if (found) break;
+      }
+      if (!found) {
+        for (const list of lists) {
+          found = list.find(x => normKey(x.t) === jkey || normKey(x.z) === key);
+          if (found) break;
+        }
+      }
+      if (found) {
+        await ensureCredits();
+        openWorkModal(found);
+      }
+    } catch { }
+  }
+
   function renderWorkItem(w) {
-    const item = el('div', 'work-item');
+    const item = el('div', 'work-item clickable');
+    item.title = '查看该作品卡片';
+    item.addEventListener('click', () => openWorkFromStaff(w));
     item.appendChild(el('span', 'work-year', w.y ? String(w.y) : '—'));
     const tw = el('span', 'work-title');
     const zh = state.localZh[w.j] || state.fileZh[w.j] || '';
@@ -281,6 +316,7 @@
     const label = zh ? `${w.t}（${zh}）` : w.t;
     if (link) {
       const a = el('a', '', label); a.href = link; a.target = '_blank'; a.rel = 'noopener';
+      a.addEventListener('click', (e) => e.stopPropagation());
       tw.appendChild(a);
     } else tw.appendChild(document.createTextNode(label));
     if (w.j && w.j !== w.t) tw.appendChild(el('span', 'ja', w.j));
