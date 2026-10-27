@@ -88,7 +88,10 @@
     const bar = $('#profFilter');
     bar.innerHTML = '';
     const counts = new Map();
-    for (const s of state.staffIndex) for (const p of s.p || []) counts.set(p, (counts.get(p) || 0) + 1);
+    for (const s of state.staffIndex) for (const p of s.p || []) {
+      if (p === '制作' || p === '其他') continue;
+      counts.set(p, (counts.get(p) || 0) + 1);
+    }
     const mk = (label, key, count) => {
       const b = el('button', 'chip' + (state.profFilter === key ? ' active' : ''));
       b.appendChild(document.createTextNode(label + ' '));
@@ -101,7 +104,10 @@
       bar.appendChild(b);
     };
     mk('全部职业', 'all', state.staffIndex.length);
-    for (const p of PROF_ORDER) if (counts.get(p)) mk(p, p, counts.get(p));
+    for (const p of PROF_ORDER) {
+      if (p === '制作' || p === '其他') continue;
+      if (counts.get(p)) mk(p, p, counts.get(p));
+    }
   }
 
   function filteredStaff() {
@@ -126,10 +132,12 @@
     if (!list.length) { wrap.appendChild(el('div', 'noresult', '没有匹配的人员')); renderAz([]); return; }
     const groups = new Map();
     for (const s of list) {
-      const g = /^[A-Z]$/.test(s.i) ? s.i : '#';
+      if (!/^[A-Z]$/.test(s.i)) continue; // 不保留 # 分类
+      const g = s.i;
       if (!groups.has(g)) groups.set(g, []);
       groups.get(g).push(s);
     }
+    if (!groups.size) { wrap.appendChild(el('div', 'noresult', '没有匹配的人员')); renderAz([]); return; }
     renderAz([...groups.keys()]);
     for (const [g, items] of groups) {
       const gdiv = el('div', 'letter-group');
@@ -140,7 +148,7 @@
         const left = el('div', 'staff-left');
         left.appendChild(el('span', 'staff-name', s.n));
         const proftags = el('span', 'prof-tags');
-        for (const p of (s.p || []).slice(0, 4)) proftags.appendChild(el('span', 'prof-tag', p));
+        for (const p of (s.p || []).filter(p2 => p2 !== '制作' && p2 !== '其他').slice(0, 4)) proftags.appendChild(el('span', 'prof-tag', p));
         left.appendChild(proftags);
         item.appendChild(left);
         item.addEventListener('click', () => showStaff(s));
@@ -340,7 +348,8 @@
     if (state.workSort === 'letter') {
       let lastG = null;
       for (const w of list) {
-        const g = /^[A-Z]$/.test(w.i) ? w.i : (w.i || '#');
+        const g = /^[A-Z]$/.test(w.i) ? w.i : null;
+        if (!g) continue; // 不保留 # 分类
         if (g !== lastG) { grid.appendChild(el('div', 'letter-head', g)); lastG = g; }
         grid.appendChild(renderWorkCard(w));
       }
@@ -482,6 +491,7 @@
       const parts = [];
       if (x.o) parts.push(x.o);
       if (x.a) parts.push(`享年${x.a}岁`);
+      if (x.r && x.r.length) parts.push(`代表作：${x.r.join('、')}`);
       if (x.w) parts.push(`OP表记 ${x.w} 部`);
       desc.appendChild(document.createTextNode(parts.join('，') + (parts.length ? '。' : '')));
       row.appendChild(desc);

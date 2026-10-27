@@ -290,3 +290,4 @@ main { max-width: 1360px; margin: 0 auto; padding: 18px; }
   .edit-row { grid-template-columns: 50px 1fr; }
   .edit-input { grid-column: 1 / -1; }
 }
+.modal-mask[hidden] { display: none !important; }
