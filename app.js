@@ -725,6 +725,59 @@
     next.addEventListener('click', () => { state.untPage++; renderUntranslated(); });
     pager.appendChild(prev); pager.appendChild(info); pager.appendChild(next);
     wrap.appendChild(pager);
+
+    // ---- 疑似匹配（萌娘红链中文标题 ↔ 作品库日文作品）----
+    const sbox = el('div', 'suggest-box');
+    sbox.innerHTML = '<div class="loading">加载疑似匹配…</div>';
+    wrap.appendChild(sbox);
+    if (!state.zhSuggestions) {
+      try { state.zhSuggestions = await (await fetch('data/zh-suggestions.json')).json(); }
+      catch { state.zhSuggestions = []; }
+    }
+    const sugg = state.zhSuggestions || [];
+    sbox.innerHTML = '';
+    if (!sugg.length) return;
+    const shead = el('div', 'suggest-head');
+    shead.appendChild(el('h3', '', `疑似匹配 · ${sugg.length} 条`));
+    shead.appendChild(el('span', 'suggest-hint', '萌娘季度页里没有词条的中文标题，按 Bangumi 搜索对应到作品库中的日文作品；确认后点「采用」即可写入中文名。'));
+    sbox.appendChild(shead);
+    const filter = document.createElement('input');
+    filter.className = 'edit-input suggest-filter';
+    filter.placeholder = '筛选：中文标题 / 日文标题';
+    sbox.appendChild(filter);
+    const listEl = el('div', 'suggest-list');
+    sbox.appendChild(listEl);
+    const renderSug = () => {
+      const q = filter.value.trim().toLowerCase();
+      listEl.innerHTML = '';
+      let n = 0;
+      for (const s of sugg) {
+        for (const c of s.cands || []) {
+          const hay = `${s.zh} ${c.ja}`.toLowerCase();
+          if (q && !hay.includes(q)) continue;
+          const row = el('div', 'suggest-row');
+          row.appendChild(el('span', 'suggest-zh', s.zh));
+          row.appendChild(el('span', 'suggest-ja', `${c.ja}${c.y ? `（${c.y}）` : ''}`));
+          const btn = el('button', 'chip', '采用');
+          btn.addEventListener('click', () => {
+            state.localZh[c.ja] = s.zh;
+            saveLocal();
+            btn.textContent = '已采用';
+            btn.disabled = true;
+            const sub = $('#untranslatedPageSub');
+            if (sub) sub.textContent = sub.textContent.replace(/已编辑 \d+ 条/, `已编辑 ${Object.keys(state.localZh).length} 条`);
+          });
+          if (state.localZh[c.ja] === s.zh) { btn.textContent = '已采用'; btn.disabled = true; }
+          row.appendChild(btn);
+          listEl.appendChild(row);
+          if (++n >= 400) break;
+        }
+        if (n >= 400) break;
+      }
+      if (!n) listEl.appendChild(el('div', 'noresult', '没有匹配'));
+    };
+    filter.addEventListener('input', renderSug);
+    renderSug();
   }
 
   function exportOverrides() {

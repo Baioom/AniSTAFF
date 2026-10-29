@@ -1,6 +1,6 @@
 {
- "generated": "2026-10-27T20:40:28.641Z",
- "staffCount": 19989,
+ "generated": "2026-10-28T08:31:22.045Z",
+ "staffCount": 21098,
  "worksDb": {
   "tv": 6299,
   "movie": 2269,
@@ -8,18 +8,18 @@
   "web": 431
  },
  "zhCoverage": {
-  "tv": 4358,
-  "movie": 1141,
-  "ova": 343
+  "tv": 4500,
+  "movie": 1167,
+  "ova": 345
  },
  "authorsCount": 744,
  "companiesCount": 71,
  "deceasedCount": 33,
- "workCreditsCount": 6647,
+ "workCreditsCount": 6311,
  "untranslated": {
-  "tv": 1941,
-  "movie": 1128,
-  "ova": 681
+  "tv": 1799,
+  "movie": 1102,
+  "ova": 679
  },
  "sources": {
   "op": "https://mzh.moegirl.org.cn/User:黑黑的白描/日本TV动画OP表记",
